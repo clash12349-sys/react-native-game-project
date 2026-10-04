@@ -1,10 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import GameScreen from './screens/GameScreen';
 
-export default function App() {
+const Stack = createNativeStackNavigator();
+
+function HomeScreen({ navigation }) {
   const handlePress = () => {
-    console.log('Start Game pressed');
+    navigation.navigate('Game');
   };
 
   return (
@@ -25,11 +30,36 @@ export default function App() {
         style={styles.button}
       >
         <FontAwesome name="home" size={24} color="black" />
-        <Text style={styles.buttonText}>Start Battle</Text>
+
+        <Text style={styles.buttonText}>
+          Start Battle
+        </Text>
       </TouchableOpacity>
 
       <StatusBar style="light" />
     </View>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="Game"
+          component={GameScreen}
+          options={{ title: 'Fight For Glory' }}
+        />
+
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
