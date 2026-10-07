@@ -109,6 +109,40 @@ function reducer(state, action) {
         ],
       };
 
+    case 'MAGIC_ATTACK':
+
+      if (state.magic <= 0) {
+        return {
+          ...state,
+          combatLog: [
+            ...state.combatLog,
+            'You do not have enough magic!'
+          ],
+        };
+      }
+
+      return {
+        ...state,
+        monsterHealth: Math.max(
+          0,
+          state.monsterHealth - (state.magic * 2)
+        ),
+        combatLog: [
+          ...state.combatLog,
+          `You used Magic Attack for ${state.magic * 2} damage!`
+        ],
+      };
+    case 'HEAL':
+
+      return {
+        ...state,
+        health: state.health + 10,
+        combatLog: [
+          ...state.combatLog,
+          'You healed yourself for 10 health!'
+        ],
+      };
+
     default:
       return state;
   }
@@ -302,6 +336,9 @@ export default function GameScreen() {
 
           <TouchableOpacity
             style={styles.actionButton}
+            onPress={() => dispatch({
+              type: 'MAGIC_ATTACK'
+            })}
           >
 
             <Text style={styles.actionText}>
@@ -312,6 +349,9 @@ export default function GameScreen() {
 
           <TouchableOpacity
             style={styles.actionButton}
+            onPress={() => dispatch({
+              type: 'HEAL'
+            })}
           >
 
             <Text style={styles.actionText}>
