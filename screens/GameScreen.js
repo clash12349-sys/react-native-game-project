@@ -490,10 +490,17 @@ export default function GameScreen() {
         {state.gameOver ? (
 
           <View style={styles.resultContainer}>
+            {state.result === 'Victory!' && (
+              <Image
+                source={require('../assets/monsterDead.png')
 
-            <Text style={styles.resultText}>
-              {state.result}
-            </Text>
+
+                }
+                style={styles.monsterDeadImage} />
+            )}
+            <Text style={styles.resultText}>{state.result}</Text>
+
+
 
           </View>
 
@@ -730,6 +737,12 @@ const styles = StyleSheet.create({
     color: '#FFD700',
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  monsterDeadImage: {
+    width: 220,
+    height: 220,
+    resizeMode: 'contain',
+    marginBottom: 20,
   },
 
 });
