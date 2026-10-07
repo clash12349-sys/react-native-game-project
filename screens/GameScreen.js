@@ -316,6 +316,11 @@ function reducer(state, action) {
       };
     }
 
+    case 'RESET_GAME':
+      return {
+        ...initialState
+      }
+
 
     default:
       return state;
@@ -490,17 +495,29 @@ export default function GameScreen() {
         {state.gameOver ? (
 
           <View style={styles.resultContainer}>
+
             {state.result === 'Victory!' && (
               <Image
-                source={require('../assets/monsterDead.png')
-
-
-                }
-                style={styles.monsterDeadImage} />
+                source={require('../assets/monsterDead.png')}
+                style={styles.monsterDeadImage}
+              />
             )}
-            <Text style={styles.resultText}>{state.result}</Text>
 
+            <Text style={styles.resultText}>
+              {state.result}
+            </Text>
 
+            <TouchableOpacity
+              style={styles.replayButton}
+              onPress={() => {
+                dispatch({ type: 'RESET_GAME' });
+                setGameMode('characterCreation');
+              }}
+            >
+              <Text style={styles.replayText}>
+                Replay
+              </Text>
+            </TouchableOpacity>
 
           </View>
 
@@ -743,6 +760,20 @@ const styles = StyleSheet.create({
     height: 220,
     resizeMode: 'contain',
     marginBottom: 20,
+  },
+  replayButton: {
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+
+  replayText: {
+    color: 'black',
+    fontSize: 17,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 
 });
