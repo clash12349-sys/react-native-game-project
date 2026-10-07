@@ -24,6 +24,9 @@ const initialState = {
     'The battle has begun!',
     'A monster appears!'
   ],
+
+  gameOver: false,
+  result: '',
 };
 
 function reducer(state, action) {
@@ -31,6 +34,7 @@ function reducer(state, action) {
   switch (action.type) {
 
     case 'INCREASE_STRENGTH':
+
       if (state.points === 0) {
         return state;
       }
@@ -41,7 +45,9 @@ function reducer(state, action) {
         points: state.points - 1,
       };
 
+
     case 'DECREASE_STRENGTH':
+
       if (state.strength <= 1) {
         return state;
       }
@@ -52,7 +58,9 @@ function reducer(state, action) {
         points: state.points + 1,
       };
 
+
     case 'INCREASE_HEALTH':
+
       if (state.points === 0) {
         return state;
       }
@@ -63,7 +71,9 @@ function reducer(state, action) {
         points: state.points - 1,
       };
 
+
     case 'DECREASE_HEALTH':
+
       if (state.health <= 10) {
         return state;
       }
@@ -74,7 +84,9 @@ function reducer(state, action) {
         points: state.points + 1,
       };
 
+
     case 'INCREASE_MAGIC':
+
       if (state.points === 0) {
         return state;
       }
@@ -85,7 +97,9 @@ function reducer(state, action) {
         points: state.points - 1,
       };
 
+
     case 'DECREASE_MAGIC':
+
       if (state.magic <= 1) {
         return state;
       }
@@ -96,57 +110,218 @@ function reducer(state, action) {
         points: state.points + 1,
       };
 
-    case 'ATTACK':
-      return {
-        ...state,
-        monsterHealth: Math.max(
+
+    case 'ATTACK': {
+
+      if (state.gameOver) {
+        return state;
+      }
+
+      const monsterHealth =
+        Math.max(
           0,
           state.monsterHealth - state.strength
-        ),
-        combatLog: [
-          ...state.combatLog,
-          `You attacked the monster for ${state.strength} damage!`
-        ],
-      };
+        );
 
-    case 'MAGIC_ATTACK':
+      if (monsterHealth <= 0) {
 
-      if (state.magic <= 0) {
         return {
           ...state,
+          monsterHealth: 0,
+          gameOver: true,
+          result: 'Victory!',
           combatLog: [
             ...state.combatLog,
-            'You do not have enough magic!'
+            `You attacked the monster for ${state.strength} damage!`,
+            'The monster has been defeated!',
+            'You won the battle!'
+          ],
+        };
+      }
+
+      const playerHealth =
+        Math.max(
+          0,
+          state.health - state.monsterStrength
+        );
+
+      if (playerHealth <= 0) {
+
+        return {
+          ...state,
+          monsterHealth: monsterHealth,
+          health: 0,
+          gameOver: true,
+          result: 'Defeat!',
+          combatLog: [
+            ...state.combatLog,
+            `You attacked the monster for ${state.strength} damage!`,
+            `The monster counterattacked for ${state.monsterStrength} damage!`,
+            'You have been defeated!'
           ],
         };
       }
 
       return {
         ...state,
-        monsterHealth: Math.max(
-          0,
-          state.monsterHealth - (state.magic * 2)
-        ),
+
+        monsterHealth: monsterHealth,
+
+        health: playerHealth,
+
         combatLog: [
           ...state.combatLog,
-          `You used Magic Attack for ${state.magic * 2} damage!`
+          `You attacked the monster for ${state.strength} damage!`,
+          `The monster counterattacked for ${state.monsterStrength} damage!`
         ],
       };
-    case 'HEAL':
+    }
+
+
+    case 'MAGIC_ATTACK': {
+
+      if (state.gameOver) {
+        return state;
+      }
+
+      if (state.magic <= 0) {
+
+        return {
+          ...state,
+
+          combatLog: [
+            ...state.combatLog,
+            'You do not have enough magic to cast this spell!'
+          ],
+        };
+      }
+
+      const magicDamage = state.magic * 5;
+
+      const monsterHealth =
+        Math.max(
+          0,
+          state.monsterHealth - magicDamage
+        );
+
+      const remainingMagic =
+        state.magic - 1;
+
+      if (monsterHealth <= 0) {
+
+        return {
+          ...state,
+
+          monsterHealth: 0,
+
+          magic: remainingMagic,
+
+          gameOver: true,
+
+          result: 'Victory!',
+
+          combatLog: [
+            ...state.combatLog,
+            `You cast Magic Attack for ${magicDamage} damage!`,
+            'The monster has been defeated!',
+            'You won the battle!'
+          ],
+        };
+      }
+
+      const playerHealth =
+        Math.max(
+          0,
+          state.health - state.monsterStrength
+        );
+
+      if (playerHealth <= 0) {
+
+        return {
+          ...state,
+
+          monsterHealth: monsterHealth,
+
+          health: 0,
+
+          magic: remainingMagic,
+
+          gameOver: true,
+
+          result: 'Defeat!',
+
+          combatLog: [
+            ...state.combatLog,
+            `You cast Magic Attack for ${magicDamage} damage!`,
+            `The monster counterattacked for ${state.monsterStrength} damage!`,
+            'You have been defeated!'
+          ],
+        };
+      }
 
       return {
         ...state,
-        health: state.health + 10,
+
+        monsterHealth: monsterHealth,
+
+        health: playerHealth,
+
+        magic: remainingMagic,
+
         combatLog: [
           ...state.combatLog,
-          'You healed yourself for 10 health!'
+          `You cast Magic Attack for ${magicDamage} damage!`,
+          `The monster counterattacked for ${state.monsterStrength} damage!`
         ],
       };
+    }
+
+
+    case 'HEAL': {
+
+      if (state.gameOver) {
+        return state;
+      }
+
+      if (state.magic <= 0) {
+
+        return {
+          ...state,
+
+          combatLog: [
+            ...state.combatLog,
+            'You do not have enough magic to heal!'
+          ],
+        };
+      }
+
+      const newHealth =
+        state.health + 10;
+
+      const remainingMagic =
+        state.magic - 1;
+
+      return {
+        ...state,
+
+        health: newHealth,
+
+        magic: remainingMagic,
+
+        combatLog: [
+          ...state.combatLog,
+          'You healed yourself for 10 health!',
+          'The monster skipped its turn.'
+        ],
+      };
+    }
+
 
     default:
       return state;
   }
 }
+
 
 export default function GameScreen() {
 
@@ -160,6 +335,7 @@ export default function GameScreen() {
   );
 
   let whatToDisplay;
+
 
   if (gameMode === 'characterCreation') {
 
@@ -246,6 +422,7 @@ export default function GameScreen() {
     );
   }
 
+
   else if (gameMode === 'combat') {
 
     whatToDisplay = (
@@ -255,116 +432,151 @@ export default function GameScreen() {
           Combat!
         </Text>
 
-        <View style={styles.monsterContainer}>
 
-          <Text style={styles.monsterName}>
-            Alien Wizard
-          </Text>
+        <View style={styles.statsContainer}>
 
-          <Image
-            source={require('../assets/alienWizard.png')}
-            style={styles.monsterImage}
-          />
+          <View style={styles.playerStats}>
 
-          <Text style={styles.combatText}>
-            Health: {state.monsterHealth}
-          </Text>
-
-          <Text style={styles.combatText}>
-            Strength: {state.monsterStrength}
-          </Text>
-
-          <Text style={styles.combatText}>
-            Magic: {state.monsterMagic}
-          </Text>
-
-        </View>
-
-        <View style={styles.playerContainer}>
-
-          <Text style={styles.playerName}>
-            Your Character
-          </Text>
-
-          <Text style={styles.combatText}>
-            Strength: {state.strength}
-          </Text>
-
-          <Text style={styles.combatText}>
-            Health: {state.health}
-          </Text>
-
-          <Text style={styles.combatText}>
-            Magic: {state.magic}
-          </Text>
-
-        </View>
-
-        <Text style={styles.logTitle}>
-          Combat Log
-        </Text>
-
-        <FlatList
-          data={state.combatLog}
-          keyExtractor={(item, index) =>
-            index.toString()
-          }
-          renderItem={({ item }) => (
-            <Text style={styles.logText}>
-              {item}
+            <Text style={styles.playerName}>
+              Your Character
             </Text>
-          )}
-          style={styles.log}
+
+            <Text style={styles.combatText}>
+              Health: {state.health}
+            </Text>
+
+            <Text style={styles.combatText}>
+              Strength: {state.strength}
+            </Text>
+
+            <Text style={styles.combatText}>
+              Magic: {state.magic}
+            </Text>
+
+          </View>
+
+
+          <View style={styles.monsterStats}>
+
+            <Text style={styles.monsterName}>
+              Alien Wizard
+            </Text>
+
+            <Text style={styles.combatText}>
+              Health: {state.monsterHealth}
+            </Text>
+
+            <Text style={styles.combatText}>
+              Strength: {state.monsterStrength}
+            </Text>
+
+            <Text style={styles.combatText}>
+              Magic: {state.monsterMagic}
+            </Text>
+
+          </View>
+
+        </View>
+
+
+        <Image
+          source={
+            require('../assets/alienWizard.png')
+          }
+          style={styles.monsterImage}
         />
 
-        <View style={styles.actions}>
 
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() =>
-              dispatch({
-                type: 'ATTACK'
-              })
-            }
-          >
+        {state.gameOver ? (
 
-            <Text style={styles.actionText}>
-              Attack
+          <View style={styles.resultContainer}>
+
+            <Text style={styles.resultText}>
+              {state.result}
             </Text>
 
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => dispatch({
-              type: 'MAGIC_ATTACK'
-            })}
-          >
+        ) : (
 
-            <Text style={styles.actionText}>
-              Magic Attack
+          <>
+
+            <Text style={styles.logTitle}>
+              Combat Log
             </Text>
 
-          </TouchableOpacity>
+            <FlatList
+              data={state.combatLog}
+              keyExtractor={(item, index) =>
+                index.toString()
+              }
+              renderItem={({ item }) => (
+                <Text style={styles.logText}>
+                  {item}
+                </Text>
+              )}
+              style={styles.log}
+            />
 
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => dispatch({
-              type: 'HEAL'
-            })}
-          >
 
-            <Text style={styles.actionText}>
-              Heal
-            </Text>
+            <View style={styles.actions}>
 
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() =>
+                  dispatch({
+                    type: 'ATTACK'
+                  })
+                }
+              >
 
-        </View>
+                <Text style={styles.actionText}>
+                  Attack
+                </Text>
+
+              </TouchableOpacity>
+
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() =>
+                  dispatch({
+                    type: 'MAGIC_ATTACK'
+                  })
+                }
+              >
+
+                <Text style={styles.actionText}>
+                  Magic Attack
+                </Text>
+
+              </TouchableOpacity>
+
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() =>
+                  dispatch({
+                    type: 'HEAL'
+                  })
+                }
+              >
+
+                <Text style={styles.actionText}>
+                  Heal
+                </Text>
+
+              </TouchableOpacity>
+
+            </View>
+
+          </>
+        )}
 
       </>
     );
   }
+
 
   return (
     <View style={styles.container}>
@@ -372,6 +584,7 @@ export default function GameScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
 
@@ -419,48 +632,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  monsterContainer: {
+  statsContainer: {
     width: '100%',
-    backgroundColor: '#4a2020',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
   },
 
-  monsterName: {
-    color: '#ff7777',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-
-  monsterImage: {
-    width: 120,
-    height: 120,
-    resizeMode: 'contain',
-    marginBottom: 10,
-  },
-
-  playerContainer: {
-    width: '100%',
+  playerStats: {
+    flex: 1,
     backgroundColor: '#203a4a',
-    padding: 15,
+    padding: 12,
     borderRadius: 10,
-    marginBottom: 15,
+  },
+
+  monsterStats: {
+    flex: 1,
+    backgroundColor: '#4a2020',
+    padding: 12,
+    borderRadius: 10,
   },
 
   playerName: {
     color: '#77bbff',
-    fontSize: 22,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+
+  monsterName: {
+    color: '#ff7777',
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
   },
 
   combatText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 15,
     marginVertical: 3,
+  },
+
+  monsterImage: {
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginVertical: 10,
   },
 
   logTitle: {
@@ -472,7 +690,7 @@ const styles = StyleSheet.create({
 
   log: {
     width: '100%',
-    maxHeight: 100,
+    maxHeight: 120,
     backgroundColor: '#333',
     padding: 10,
     marginBottom: 15,
@@ -499,6 +717,18 @@ const styles = StyleSheet.create({
   actionText: {
     color: 'black',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  resultContainer: {
+    padding: 20,
+    backgroundColor: '#333',
+    borderRadius: 10,
+  },
+
+  resultText: {
+    color: '#FFD700',
+    fontSize: 28,
     fontWeight: 'bold',
   },
 
